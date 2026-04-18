@@ -1,0 +1,2 @@
+# Sistema-de-Automatizaci-n-de-Presupuestos-Empresariales
+Sistema pensando con la finalidad de dar una solución dinámica a la creación de presupuestos empresariales, automatizando y optimizando la forma de ejecutarlos basados en una arquitectura local. Utilizando Python y librerías para generar una interfaz intuitiva, Sqlite para respaldar presupuestos anteriores y con la capacidad de escalabilidad 
