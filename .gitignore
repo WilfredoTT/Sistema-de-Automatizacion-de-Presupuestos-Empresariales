@@ -1,0 +1,16 @@
+venv/
+ENV/
+env/
+
+**/__pycache__/
+*.py[cod]
+*$py.class
+
+.vscode/
+.idea/
+
+Thumbs.db
+desktop.ini
+.DS_Store
+
+*.pdf
