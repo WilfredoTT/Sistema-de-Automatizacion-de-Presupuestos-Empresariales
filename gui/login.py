@@ -1,18 +1,20 @@
 import customtkinter as ctk
 from database import validar_usuario
 from tkinter import messagebox #Libreria para mensajes de alerta
-from gui.app_interface import AppInterface
 from PIL import Image
 from CTkMessagebox import CTkMessagebox
 import os
-import sys
+
 
 class LoginWindow(ctk.CTk):
     def __init__(self):
         super().__init__()
         
-        #ASIGNACION DEL ICONO A LA VENTANA Y BARRA DE TAREAS
-        ruta_icono=os.path.join(os.path.dirname(__file__), "..", "assets", "img", "IconoTd.ico")
+        #ASIGNACION DE RUTAS ABSOLUTAS
+        base_path=os.path.dirname(__file__)
+        ruta_icono=os.path.join(base_path, "..", "assets", "img", "IconoTd.ico")
+        ruta_iconologin=os.path.join(base_path, "..", "assets", "img", "UsuarioLg.png")
+        ruta_logotdm=os.path.join(base_path, "..", "assets", "img", "LgTedimeca.png")
         
         if os.path.exists(ruta_icono):
             self.iconbitmap(ruta_icono)
@@ -40,12 +42,19 @@ class LoginWindow(ctk.CTk):
         self.login_frame.grid_columnconfigure(0, weight=1)
         self.login_frame.grid_rowconfigure((0,4), weight=1) #ESPACIOS ELÁSTICOS
         
-        img_login=ctk.CTkImage(light_image=Image.open("assets/img/UsuarioLg.png"),
-                               dark_image=Image.open("assets/img/UsuarioLg.png"),
-                               size=(120,120))
-        
-        self.img_logo=ctk.CTkLabel(self.login_frame, image=img_login, text="")
-        self.img_logo.grid(row=0, column=0, sticky="s")
+        try:
+            self.imgusuariolg_procesado=Image.open(ruta_iconologin)
+            self.img_login=ctk.CTkImage(light_image=self.imgusuariolg_procesado,
+                                dark_image=self.imgusuariolg_procesado,
+                                size=(120,120))
+            
+            self.img_logo=ctk.CTkLabel(self.login_frame, image=self.img_login, text="")
+            self.img_logo.grid(row=0, column=0, sticky="s")
+            
+        except Exception as e:
+            print(f"ERROR AL CARGAR LA IMAGEN {e}")
+            self.img_logo=ctk.CTkLabel(self.login_frame, text="[INSERTE IMAGEN AQUI]", text_color=self.color_secundario)
+            self.img_logo.grid(row=0, column=0, sticky="s")
         
         self.label_titulo = ctk.CTkLabel(self.login_frame, 
                                          text="Iniciar Sesión",
@@ -95,17 +104,23 @@ class LoginWindow(ctk.CTk):
         self.brand_frame.grid_columnconfigure(0, weight=1)
         self.brand_frame.grid_rowconfigure((0, 3), weight=1)
         
-        logo_img = ctk.CTkImage(light_image=Image.open("assets/img/LgTedimeca.png"),
-                                dark_image=Image.open("assets/img/LgTedimeca.png"),
-                                size=(400, 120))
+        try:
+            self.lgtedimeca_procesado=Image.open(ruta_logotdm)
+            self.logo_img = ctk.CTkImage(light_image=self.lgtedimeca_procesado,
+                                    dark_image=self.lgtedimeca_procesado,
+                                    size=(400, 120))
+            self.label_imagen = ctk.CTkLabel(self.brand_frame, image=self.logo_img, text="")
+            self.label_imagen.grid(row=1, column=0, pady=(0,1))
             
-        self.label_imagen = ctk.CTkLabel(self.brand_frame, image=logo_img, text="")
-        self.label_imagen.grid(row=1, column=0, pady=(0,1))
-
+        except Exception as e:
+            print(f"Error al cargar la imagen: {e}")
+            self.label_imagen = ctk.CTkLabel(self.brand_frame, text="[INSERTE LOGO AQUI]", text_color=self.color_resalte)
+            self.label_imagen.grid(row=1, column=0, pady=(0,1))
+            
         self.label_logo = ctk.CTkLabel(self.brand_frame, 
-                                       text="TEDIMECA.CA", 
-                                       font=("Arial", 65, "bold", "italic"), 
-                                       text_color=self.color_resalte)
+                                        text="TEDIMECA.CA", 
+                                        font=("Arial", 65, "bold", "italic"), 
+                                        text_color=self.color_resalte)
         self.label_logo.grid(row=2, column=0, pady=(0, 20))
         
         self.label_slogan = ctk.CTkLabel(self.brand_frame, 
@@ -134,7 +149,6 @@ class LoginWindow(ctk.CTk):
         
         if resultado:
             rol = resultado[0] #almacenamiento de rol por si se debe utilizar
-            print(f"¡Acceso concedido como {rol}!")#alerta sistema
             
             #Alerta pantalla
             msg= CTkMessagebox(title="Acceso Concedido", 
@@ -143,11 +157,21 @@ class LoginWindow(ctk.CTk):
                                icon="check")
             
             if msg.get() == "Continuar":
-                self.destroy()#Cierre de login
-            
-            #apertura interfaz principal
-            app_interface = AppInterface()
-            app_interface.mainloop()
+                self.withdraw()#Esconde el login
+                
+                from gui.app_interface import AppInterface
+                
+                #apertura interfaz principal
+                app_interface = AppInterface()
+                app_interface.wait_window()
+                
+                self.user_entry.delete(0, "end")
+                self.pass_entry.delete(0, "end")
+                self.user_entry.focus()
+                
+                self.deiconify( )
+                self.state('zoomed')
+                print("CERRANDO LOGIN ABRIENDO DASHBOARD PRINCIPAL")
         else:
             msg= CTkMessagebox(title="Acceso Denegado", 
                                message="Credenciales incorrectas", 
