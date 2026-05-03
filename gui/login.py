@@ -20,7 +20,7 @@ class LoginWindow(ctk.CTk):
             self.iconbitmap(ruta_icono)
         
         #CREACIÓN DE VENTANA INICIAL
-        self.title("Tedimeca.CA - Acceso al Sistema")
+        self.title("Sistema de Automatización de Presupuestos - PresuQuest - Tedimeca.CA - Acceso al Sistema")
         self.after(0, lambda: self.state('zoomed'))
         ctk.set_appearance_mode("dark")
         
@@ -42,6 +42,7 @@ class LoginWindow(ctk.CTk):
         self.login_frame.grid_columnconfigure(0, weight=1)
         self.login_frame.grid_rowconfigure((0,4), weight=1) #ESPACIOS ELÁSTICOS
         
+        #------------------------------------IMAGEN INICIAR SESION-------------------------------------
         try:
             self.imgusuariolg_procesado=Image.open(ruta_iconologin)
             self.img_login=ctk.CTkImage(light_image=self.imgusuariolg_procesado,
@@ -49,6 +50,7 @@ class LoginWindow(ctk.CTk):
                                 size=(120,120))
             
             self.img_logo=ctk.CTkLabel(self.login_frame, image=self.img_login, text="")
+            self.img_logo.image= self.img_login
             self.img_logo.grid(row=0, column=0, sticky="s")
             
         except Exception as e:
@@ -104,12 +106,14 @@ class LoginWindow(ctk.CTk):
         self.brand_frame.grid_columnconfigure(0, weight=1)
         self.brand_frame.grid_rowconfigure((0, 3), weight=1)
         
+        #-------------------------LOGO EMRPRESA------------------------------------------------
         try:
             self.lgtedimeca_procesado=Image.open(ruta_logotdm)
             self.logo_img = ctk.CTkImage(light_image=self.lgtedimeca_procesado,
                                     dark_image=self.lgtedimeca_procesado,
                                     size=(400, 120))
             self.label_imagen = ctk.CTkLabel(self.brand_frame, image=self.logo_img, text="")
+            self.label_imagen.image= self.logo_img
             self.label_imagen.grid(row=1, column=0, pady=(0,1))
             
         except Exception as e:
@@ -128,6 +132,8 @@ class LoginWindow(ctk.CTk):
                                          font=("Arial", 25), 
                                          text_color=self.color_resalte)
         self.label_slogan.grid(row=2, column=0, pady=(70, 0))
+        
+        self.bind("<Return>", lambda event: self.validar_datos())
     
     def al_entrar_mouse(self, event):
         self.btn_entrar.configure(text="¿LISTO PARA TRABAJAR?",
@@ -146,13 +152,12 @@ class LoginWindow(ctk.CTk):
     
         resultado = validar_usuario(usuario, contrasena)
         
-        
         if resultado:
-            rol = resultado[0] #almacenamiento de rol por si se debe utilizar
+            id_user, nombre_user,rol = resultado #Desempaquetamos la tupla de la DB
             
             #Alerta pantalla
-            msg= CTkMessagebox(title="Acceso Concedido", 
-                               message=f"¡Acceso concedido como {rol}!", 
+            msg= CTkMessagebox(title=f"Acceso Concedido como {rol}", 
+                               message=f"¡Bienvenido {nombre_user}", 
                                option_1="Continuar", 
                                icon="check")
             
@@ -162,7 +167,7 @@ class LoginWindow(ctk.CTk):
                 from gui.app_interface import AppInterface
                 
                 #apertura interfaz principal
-                app_interface = AppInterface()
+                app_interface = AppInterface(user_data=resultado)
                 app_interface.wait_window()
                 
                 self.user_entry.delete(0, "end")
@@ -171,7 +176,6 @@ class LoginWindow(ctk.CTk):
                 
                 self.deiconify( )
                 self.state('zoomed')
-                print("CERRANDO LOGIN ABRIENDO DASHBOARD PRINCIPAL")
         else:
             msg= CTkMessagebox(title="Acceso Denegado", 
                                message="Credenciales incorrectas", 
